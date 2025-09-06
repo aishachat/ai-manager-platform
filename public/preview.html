@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предосмотр виджета Adapto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+        }
+        .preview-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .widget-preview {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1354FC;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(19, 84, 252, 0.3);
+            z-index: 9999;
+            transition: all 0.3s ease;
+        }
+        .widget-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(19, 84, 252, 0.4);
+        }
+        .widget-preview .main-text {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .widget-preview .sub-text {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .settings-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .settings-display h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .setting-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #1354FC;
+        }
+        .setting-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .setting-value {
+            color: #333;
+            margin-top: 5px;
+        }
+        
+        /* Диалоговое окно */
+        .chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 10000;
+        }
+        .chat-container {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background: #1354FC;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1354FC;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .message.user {
+            background: #1354FC;
+            color: white;
+            margin-left: auto;
+        }
+        .message.bot {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            outline: none;
+        }
+        .chat-input button {
+            padding: 10px 15px;
+            background: #1354FC;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .close-chat {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <h1>Предосмотр виджета Adapto</h1>
+        <p>Это страница предосмотра настроек вашего виджета. Виджет отображается в правом нижнем углу.</p>
+        
+        <div class="settings-display">
+            <h3>Текущие настройки:</h3>
+            <div id="settings-display">
+                <div class="setting-item">
+                    <div class="setting-label">Цвет акцента:</div>
+                    <div class="setting-value" id="accent-color">#1354FC</div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">Текст кнопки:</div>
+                    <div class="setting-value" id="button-text">Спросить ИИ</div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">Подтекст кнопки:</div>
+                    <div class="setting-value" id="button-subtext">Задать вопрос</div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">Расположение:</div>
+                    <div class="setting-value" id="widget-location">По умолчанию</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Виджет предосмотра -->
+    <div class="widget-preview" id="widget-preview">
+        <div class="main-text" id="widget-main-text">Спросить ИИ</div>
+        <div class="sub-text" id="widget-sub-text">Задать вопрос</div>
+    </div>
+
+    <!-- Диалоговое окно -->
+    <div class="chat-modal" id="chat-modal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-avatar">A</div>
+                <div>
+                    <div style="font-weight: bold;">Adapto</div>
+                    <div style="font-size: 12px; opacity: 0.8;">ИИ ассистент</div>
+                </div>
+                <button class="close-chat" onclick="closeChat()">×</button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot">
+                    Привет! Меня зовут Adapto, я ИИ ассистент. Чем могу помочь?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Введите сообщение..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Получаем настройки из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const settingsParam = urlParams.get('settings');
+        
+        if (settingsParam) {
+            try {
+                const settings = JSON.parse(decodeURIComponent(settingsParam));
+                
+                // Обновляем отображение настроек
+                document.getElementById('accent-color').textContent = settings.accentColor || '#1354FC';
+                document.getElementById('button-text').textContent = settings.buttonText || 'Спросить ИИ';
+                document.getElementById('button-subtext').textContent = settings.buttonSubtext || 'Задать вопрос';
+                document.getElementById('widget-location').textContent = settings.widgetLocation === 'custom' ? 'Настроено' : 'По умолчанию';
+                
+                // Обновляем виджет
+                const widget = document.getElementById('widget-preview');
+                const mainText = document.getElementById('widget-main-text');
+                const subText = document.getElementById('widget-sub-text');
+                
+                mainText.textContent = settings.buttonText || 'Спросить ИИ';
+                subText.textContent = settings.buttonSubtext || 'Задать вопрос';
+                
+                // Применяем цвет
+                if (settings.buttonColor === 'custom') {
+                    widget.style.background = settings.customButtonColor || '#1354FC';
+                } else if (settings.buttonColor === 'dark') {
+                    widget.style.background = '#1f2937';
+                } else {
+                    widget.style.background = '#1354FC';
+                }
+                
+                // Применяем позиционирование
+                if (settings.widgetLocation === 'custom') {
+                    widget.style.bottom = (settings.desktopBottomOffset || 20) + 'px';
+                    widget.style.right = (settings.desktopRightOffset || 20) + 'px';
+                    widget.style.zIndex = settings.zIndex || 9999;
+                }
+                
+            } catch (error) {
+                console.error('Ошибка при парсинге настроек:', error);
+            }
+        }
+
+        // Функции для диалогового окна
+        function openChat() {
+            document.getElementById('chat-modal').style.display = 'block';
+        }
+
+        function closeChat() {
+            document.getElementById('chat-modal').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Добавляем сообщение пользователя
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Имитируем ответ бота
+            setTimeout(() => {
+                addMessage('Спасибо за ваше сообщение! Я обрабатываю ваш запрос.', 'bot');
+            }, 1000);
+        }
+
+        function addMessage(text, type) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Добавляем обработчик клика на виджет
+        document.getElementById('widget-preview').addEventListener('click', openChat);
+    </script>
+</body>
+</html>

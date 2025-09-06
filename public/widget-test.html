@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест виджета Adapto</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-content {
+            min-height: 400px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .widget-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тест виджета Adapto</h1>
+        
+        <div class="widget-info">
+            <h3>Информация о виджете:</h3>
+            <p>Этот виджет поддерживает:</p>
+            <ul>
+                <li>Режим чата с ИИ-ассистентом</li>
+                <li>Быстрые вопросы с готовыми ответами</li>
+                <li>Форму заявки для сбора лидов</li>
+                <li>Настройку внешнего вида</li>
+            </ul>
+        </div>
+
+        <div class="test-content">
+            <h2>Контент страницы</h2>
+            <p>Это тестовая страница для проверки работы виджета. Виджет должен появиться в правом нижнем углу.</p>
+            <p>Попробуйте:</p>
+            <ul>
+                <li>Нажать на кнопку виджета</li>
+                <li>Отправить сообщение в чате</li>
+                <li>Выбрать быстрый вопрос</li>
+                <li>Заполнить форму заявки</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Виджет -->
+    <script src="/widget.js"></script>
+    <script>
+        // Инициализация виджета с настройками
+        window.adaptoWidget.init({
+            accentColor: '#1354FC',
+            buttonText: 'Спросить ИИ',
+            widgetMode: 'chat',
+            quickQuestions: [
+                { question: 'Как работает ваш сервис?', answer: 'Наш сервис использует ИИ для автоматизации общения с клиентами.' },
+                { question: 'Сколько стоит?', answer: 'У нас есть несколько тарифных планов. Базовый план стоит 2990₽ в месяц.' },
+                { question: 'Есть ли демо?', answer: 'Да, вы можете попробовать демо-версию бесплатно в течение 14 дней.' }
+            ],
+            leadFormEnabled: 'yes',
+            leadFormTitle: 'Оставьте заявку',
+            leadFormDescription: 'Мы свяжемся с вами в ближайшее время',
+            leadFormFields: [
+                { name: 'name', label: 'Имя', type: 'text', required: true },
+                { name: 'phone', label: 'Телефон', type: 'tel', required: true },
+                { name: 'email', label: 'Email', type: 'email', required: false }
+            ]
+        });
+    </script>
+</body>
+</html>
+
+

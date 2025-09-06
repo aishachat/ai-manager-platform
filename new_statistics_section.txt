@@ -1,0 +1,562 @@
+
+      case 'statistics':
+        return (
+          <div className="space-y-6">
+            {/* Заголовок с календарем и экспортом */}
+            <div className="flex justify-between items-center">
+              <h1 className="text-[24px] font-[500]">Статистика</h1>
+              <div className="flex gap-3">
+                {/* Простой календарь */}
+                <div className="relative">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      console.log('Calendar button clicked');
+                      setShowCalendar(!showCalendar);
+                    }}
+                    className="h-[34px] bg-[#F3F5F7] border border-[#F3F5F7] text-[#8E8E93] hover:bg-[#E5E7EB] rounded-[7px] text-[13px] font-normal"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {dateRange.start && dateRange.end 
+                      ? `${dateRange.start.toLocaleDateString()} - ${dateRange.end.toLocaleDateString()}`
+                      : 'Выберите период'
+                    }
+                  </Button>
+                  
+                  {showCalendar && (
+                    <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-[15px] shadow-lg z-50 w-[400px]">
+                      <div className="p-4">
+                        <h4 className="font-medium text-sm mb-4">Выберите период</h4>
+                        
+                        {/* Быстрые опции */}
+                        <div className="mb-4">
+                          <div className="grid grid-cols-2 gap-2">
+                            <button 
+                              className={`px-3 py-2 text-xs rounded-[90px] text-left transition-colors ${
+                                activeQuickSelect === 'today' ? 'bg-[#0084FF] text-white' : 'bg-gray-100 hover:bg-gray-200'
+                              }`}
+                              onClick={() => {
+                                const today = new Date();
+                                setDateRange({ start: today, end: today });
+                                setActiveQuickSelect('today');
+                              }}
+                            >
+                              Сегодня
+                            </button>
+                            <button 
+                              className={`px-3 py-2 text-xs rounded-[90px] text-left transition-colors ${
+                                activeQuickSelect === 'yesterday' ? 'bg-[#0084FF] text-white' : 'bg-gray-100 hover:bg-gray-200'
+                              }`}
+                              onClick={() => {
+                                const yesterday = new Date();
+                                yesterday.setDate(yesterday.getDate() - 1);
+                                setDateRange({ start: yesterday, end: yesterday });
+                                setActiveQuickSelect('yesterday');
+                              }}
+                            >
+                              Вчера
+                            </button>
+                            <button 
+                              className={`px-3 py-2 text-xs rounded-[90px] text-left transition-colors ${
+                                activeQuickSelect === 'last7days' ? 'bg-[#0084FF] text-white' : 'bg-gray-100 hover:bg-gray-200'
+                              }`}
+                              onClick={() => {
+                                const today = new Date();
+                                const weekAgo = new Date();
+                                weekAgo.setDate(today.getDate() - 6);
+                                setDateRange({ start: weekAgo, end: today });
+                                setActiveQuickSelect('last7days');
+                              }}
+                            >
+                              7 дней
+                            </button>
+                            <button 
+                              className={`px-3 py-2 text-xs rounded-[90px] text-left transition-colors ${
+                                activeQuickSelect === 'thisMonth' ? 'bg-[#0084FF] text-white' : 'bg-gray-100 hover:bg-gray-200'
+                              }`}
+                              onClick={() => {
+                                const today = new Date();
+                                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                                setDateRange({ start: firstDay, end: lastDay });
+                                setActiveQuickSelect('thisMonth');
+                              }}
+                            >
+                              Этот месяц
+                            </button>
+                            <button 
+                              className={`px-3 py-2 text-xs rounded-[90px] text-left transition-colors ${
+                                activeQuickSelect === 'last30days' ? 'bg-[#0084FF] text-white' : 'bg-gray-100 hover:bg-gray-200'
+                              }`}
+                              onClick={() => {
+                                const today = new Date();
+                                const monthAgo = new Date();
+                                monthAgo.setDate(today.getDate() - 29);
+                                setDateRange({ start: monthAgo, end: today });
+                                setActiveQuickSelect('last30days');
+                              }}
+                            >
+                              30 дней
+                            </button>
+                            <button 
+                              className={`px-3 py-2 text-xs rounded-[90px] text-left transition-colors ${
+                                activeQuickSelect === 'last90days' ? 'bg-[#0084FF] text-white' : 'bg-gray-100 hover:bg-gray-200'
+                              }`}
+                              onClick={() => {
+                                const today = new Date();
+                                const threeMonthsAgo = new Date();
+                                threeMonthsAgo.setDate(today.getDate() - 89);
+                                setDateRange({ start: threeMonthsAgo, end: today });
+                                setActiveQuickSelect('last90days');
+                              }}
+                            >
+                              90 дней
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Простой календарь */}
+                        <div className="mb-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <button 
+                              onClick={() => {
+                                setCurrentMonth(prev => {
+                                  const newMonth = new Date(prev);
+                                  newMonth.setMonth(newMonth.getMonth() - 1);
+                                  return newMonth;
+                                });
+                              }}
+                              className="p-1 hover:bg-gray-100 rounded"
+                            >
+                              ←
+                            </button>
+                            <span className="text-sm font-medium">
+                              {currentMonth.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+                            </span>
+                            <button 
+                              onClick={() => {
+                                setCurrentMonth(prev => {
+                                  const newMonth = new Date(prev);
+                                  newMonth.setMonth(newMonth.getMonth() + 1);
+                                  return newMonth;
+                                });
+                              }}
+                              className="p-1 hover:bg-gray-100 rounded"
+                            >
+                              →
+                            </button>
+                          </div>
+                          
+                          {/* Дни недели */}
+                          <div className="grid grid-cols-7 gap-1 mb-1">
+                            {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
+                              <div key={day} className="text-xs text-gray-500 text-center p-1">
+                                {day}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Сетка календаря */}
+                          <div className="grid grid-cols-7 gap-1">
+                            {(() => {
+                              const days = [];
+                              const year = currentMonth.getFullYear();
+                              const month = currentMonth.getMonth();
+                              const firstDay = new Date(year, month, 1);
+                              const lastDay = new Date(year, month + 1, 0);
+                              const firstDayOfWeek = firstDay.getDay();
+                              const startOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+                              
+                              // Добавляем пустые ячейки в начале
+                              for (let i = 0; i < startOffset; i++) {
+                                days.push(null);
+                              }
+                              
+                              // Добавляем дни месяца
+                              for (let day = 1; day <= lastDay.getDate(); day++) {
+                                days.push(new Date(year, month, day));
+                              }
+                              
+                              // Добавляем пустые ячейки в конце до 42 ячеек
+                              while (days.length < 42) {
+                                days.push(null);
+                              }
+                              
+                              return days.map((date, index) => {
+                                if (!date) {
+                                  return <div key={index} className="w-8 h-8"></div>;
+                                }
+                                
+                                const today = new Date();
+                                const isToday = date.toDateString() === today.toDateString();
+                                const isSelected = dateRange.start && date.toDateString() === dateRange.start.toDateString();
+                                const isInRange = dateRange.start && dateRange.end && 
+                                  date >= dateRange.start && date <= dateRange.end;
+                                
+                                let className = "w-8 h-8 rounded hover:bg-gray-100 text-center text-xs cursor-pointer";
+                                
+                                if (isSelected) {
+                                  className += " bg-[#0084FF] text-white";
+                                } else if (isInRange) {
+                                  className += " bg-[#0084FF]/20 text-[#0084FF]";
+                                } else if (isToday) {
+                                  className += " bg-gray-200 text-gray-800";
+                                }
+                                
+                                return (
+                                  <button
+                                    key={index}
+                                    onClick={() => {
+                                      if (dateRange.start && !dateRange.end) {
+                                        setDateRange(prev => ({ ...prev, end: date }));
+                                      } else {
+                                        setDateRange({ start: date, end: null });
+                                      }
+                                      setActiveQuickSelect(null);
+                                    }}
+                                    className={className}
+                                  >
+                                    {date.getDate()}
+                                  </button>
+                                );
+                              });
+                            })()}
+                          </div>
+                        </div>
+                        
+                        {/* Ручной ввод дат */}
+                        <div className="mb-4">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <input
+                                type="date"
+                                value={dateRange.start ? dateRange.start.toISOString().split('T')[0] : ''}
+                                onChange={(e) => {
+                                  const newDate = new Date(e.target.value);
+                                  setDateRange(prev => ({ ...prev, start: newDate }));
+                                  setActiveQuickSelect(null);
+                                }}
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                                placeholder="От"
+                              />
+                            </div>
+                            <div>
+                              <input
+                                type="date"
+                                value={dateRange.end ? dateRange.end.toISOString().split('T')[0] : ''}
+                                onChange={(e) => {
+                                  const newDate = new Date(e.target.value);
+                                  setDateRange(prev => ({ ...prev, end: newDate }));
+                                  setActiveQuickSelect(null);
+                                }}
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                                placeholder="До"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => setShowCalendar(false)}
+                            className="h-[40px] bg-[#0084FF] text-white hover:bg-[#0073E6] rounded-[10px] text-[14px] font-[500]"
+                          >
+                            Применить
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => {
+                              setDateRange({ start: null, end: null });
+                              setActiveQuickSelect(null);
+                              setShowCalendar(false);
+                            }}
+                            className="h-[40px] bg-[#F3F5F7] border-[#F3F5F7] text-gray-700 hover:bg-[#E5E7EB] rounded-[10px] text-[14px] font-[500]"
+                          >
+                            Сбросить
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Экспорт */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToCSV()}
+                    className="h-[34px] bg-[#F3F5F7] border border-[#F3F5F7] text-[#8E8E93] hover:bg-[#E5E7EB] rounded-[10px] text-[13px] font-normal"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToXLS()}
+                    className="h-[34px] bg-[#F3F5F7] border border-[#F3F5F7] text-[#8E8E93] hover:bg-[#E5E7EB] rounded-[10px] text-[13px] font-normal"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    XLS
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Табы статистики */}
+            <div className="border-b border-gray-200">
+              <div className="flex">
+                <div className="flex-1">
+                  <button
+                    onClick={() => setActiveStatisticsTab('general')}
+                    className={`w-full py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+                      activeStatisticsTab === 'general'
+                        ? 'border-[#0084FF] text-[#0084FF]'
+                        : 'border-transparent text-[#8E8E93] hover:text-[#070F1A]'
+                    }`}
+                  >
+                    Общие метрики
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <button
+                    onClick={() => setActiveStatisticsTab('conversion')}
+                    className={`w-full py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+                      activeStatisticsTab === 'conversion'
+                        ? 'border-[#0084FF] text-[#0084FF]'
+                        : 'border-transparent text-[#8E8E93] hover:text-[#070F1A]'
+                    }`}
+                  >
+                    Метрики конверсий
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <button
+                    onClick={() => setActiveStatisticsTab('technical')}
+                    className={`w-full py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+                      activeStatisticsTab === 'technical'
+                        ? 'border-[#0084FF] text-[#0084FF]'
+                        : 'border-transparent text-[#8E8E93] hover:text-[#070F1A]'
+                    }`}
+                  >
+                    Технические метрики
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Контент табов */}
+            {activeStatisticsTab === 'general' && (
+              <div className="space-y-6">
+                {/* График активности */}
+                <Card>
+                  <CardHeader>
+                    <h3 style={{fontWeight: 500}} className="text-lg font-semibold leading-none tracking-tight text-[18px] font-[500] text-[#070F1A]">Активность по часам</h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px] flex items-center justify-center text-gray-500">
+                      График активности
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Общие метрики */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[#8E8E93]">Количество открытий виджета</p>
+                          <p className="text-2xl font-bold text-[#070F1A]">1,234</p>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <img src="/chart.svg" alt="Chart" className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[#8E8E93]">Количество диалогов</p>
+                          <p className="text-2xl font-bold text-[#070F1A]">567</p>
+                        </div>
+                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                          <img src="/message-circle.svg" alt="Chat" className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[#8E8E93]">Количество сообщений</p>
+                          <p className="text-2xl font-bold text-[#070F1A]">2,890</p>
+                        </div>
+                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <img src="/message-square.svg" alt="Messages" className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[#8E8E93]">Среднее количество сообщений на диалог</p>
+                          <p className="text-2xl font-bold text-[#070F1A]">5.1</p>
+                        </div>
+                        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                          <img src="/bar-chart.svg" alt="Average" className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {activeStatisticsTab === 'conversion' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Конверсия в основную цель</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">23.4%</p>
+                      </div>
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <img src="/target.svg" alt="Target" className="w-6 h-6" />
+                        </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Процент отказов</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">12.8%</p>
+                      </div>
+                      <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <img src="/x-circle.svg" alt="Bounce" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Вовлечение клиента</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">78.5%</p>
+                      </div>
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <img src="/users.svg" alt="Engagement" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Количество решенных вопросов</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">456</p>
+                      </div>
+                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <img src="/check-circle.svg" alt="Solved" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Коэффициент отклонений</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">8.2%</p>
+                      </div>
+                      <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <img src="/alert-triangle.svg" alt="Deviation" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {activeStatisticsTab === 'technical' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Средняя скорость ответа ИИ-агента</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">1.2с</p>
+                      </div>
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <img src="/clock.svg" alt="Response Time" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Средняя скорость разрешения вопроса</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">45с</p>
+                      </div>
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <img src="/zap.svg" alt="Resolution" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Оценка эффективности ИИ-агента</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">4.8/5</p>
+                      </div>
+                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <img src="/star.svg" alt="Rating" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-[#8E8E93]">Процент чатов с запросом о помощи человека</p>
+                        <p className="text-2xl font-bold text-[#070F1A]">3.4%</p>
+                      </div>
+                      <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <img src="/help-circle.svg" alt="Human Help" className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        );
