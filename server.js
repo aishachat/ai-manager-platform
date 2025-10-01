@@ -34,9 +34,17 @@ app.use(cors());
 app.use(express.json());
 
 // Инициализация OpenAI (для международных клиентов)
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-}) : null;
+// Инициализируем OpenAI только если есть API ключ
+let openai = null;
+if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-openai-api-key') {
+  try {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  } catch (error) {
+    console.warn('⚠️ OpenAI не удалось инициализировать:', error.message);
+  }
+}
 
 // Конфигурация ИИ-провайдеров
 const AI_PROVIDERS = {
