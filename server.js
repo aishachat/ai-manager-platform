@@ -10,7 +10,11 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 // Загружаем переменные окружения
-dotenv.config({ path: '.env.local' });
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
 
 // Настройка сертификатов для GigaChat
 const certPath = path.resolve(process.cwd(), 'russian_trusted_root_ca.crt');
@@ -30,9 +34,9 @@ app.use(cors());
 app.use(express.json());
 
 // Инициализация OpenAI (для международных клиентов)
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 // Конфигурация ИИ-провайдеров
 const AI_PROVIDERS = {
