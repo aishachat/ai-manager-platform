@@ -1168,6 +1168,22 @@ app.get('/api/analytics', async (req, res) => {
   }
 });
 
+// Главная страница
+app.get('/', (req, res) => {
+  res.json({
+    message: 'AI Manager Platform API Server',
+    status: 'running',
+    version: '2.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      chat: '/api/chat',
+      status: '/api/status',
+      knowledge: '/api/knowledge',
+      analytics: '/api/analytics'
+    }
+  });
+});
+
 // Запуск сервера
 app.listen(PORT, () => {
   console.log(`🚀 API сервер запущен на порту ${PORT}`);
