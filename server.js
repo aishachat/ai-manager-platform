@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
+// import OpenAI from 'openai'; // Отключено для избежания ошибок
 import https from 'https';
 import axios from 'axios';
 import { agentSettings, chatHistory, knowledgeBase } from './supabase.js';
@@ -33,18 +33,18 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Инициализация OpenAI (для международных клиентов)
+// Инициализация OpenAI (для международных клиентов) - ОТКЛЮЧЕНО
 // Инициализируем OpenAI только если есть API ключ
 let openai = null;
-if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-openai-api-key') {
-  try {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  } catch (error) {
-    console.warn('⚠️ OpenAI не удалось инициализировать:', error.message);
-  }
-}
+// if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-openai-api-key') {
+//   try {
+//     openai = new OpenAI({
+//       apiKey: process.env.OPENAI_API_KEY,
+//     });
+//   } catch (error) {
+//     console.warn('⚠️ OpenAI не удалось инициализировать:', error.message);
+//   }
+// }
 
 // Конфигурация ИИ-провайдеров
 const AI_PROVIDERS = {
