@@ -5,6 +5,14 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
+// Admin клиент для bypass RLS
+export const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
+
 // Тестовая функция для проверки подключения
 export const testConnection = async () => {
   try {
@@ -81,7 +89,7 @@ export const knowledgeBase = {
   async getKnowledgeItems(userId) {
     try {
       const { data, error } = await supabase
-        .from('knowledge_base')
+        .from('knowledge_sources')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -111,7 +119,7 @@ export const knowledgeBase = {
       }
       
       const { data, error } = await supabase
-        .from('knowledge_base')
+        .from('knowledge_sources')
         .insert({
           user_id: userId,
           assistant_id: userId,
@@ -143,7 +151,7 @@ export const knowledgeBase = {
       console.log('Updating knowledge item status:', itemId, 'to:', status)
       
       const { data, error } = await supabase
-        .from('knowledge_base')
+        .from('knowledge_sources')
         .update({
           status: status,
           updated_at: new Date().toISOString()
@@ -169,7 +177,7 @@ export const knowledgeBase = {
   async deleteKnowledgeItem(itemId) {
     try {
       const { error } = await supabase
-        .from('knowledge_base')
+        .from('knowledge_sources')
         .delete()
         .eq('id', itemId)
       
@@ -383,6 +391,57 @@ export const agentSettings = {
       }
       
       console.log('Agent settings saved successfully:', data)
+      return data[0]
+    } catch (error) {
+      console.error('Supabase connection error:', error)
+      return null
+    }
+  }
+}
+
+// Функции для работы с настройками виджета
+export const widgetDevelopmentSettings = {
+  // Получить настройки виджета пользователя
+  async getWidgetDevelopmentSettings(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('widget_development_settings')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+      
+      if (error) {
+        console.error('Error fetching widget settings:', error)
+        return null
+      }
+      
+      return data?.settings || null
+    } catch (error) {
+      console.error('Supabase connection error:', error)
+      return null
+    }
+  },
+
+  // Сохранить настройки виджета
+  async saveWidgetDevelopmentSettings(userId, settings) {
+    try {
+      console.log('Saving widget settings for user:', userId, settings)
+      
+      const { data, error } = await supabase
+        .from('widget_development_settings')
+        .upsert({
+          user_id: userId,
+          settings: settings,
+          updated_at: new Date().toISOString()
+        })
+        .select()
+      
+      if (error) {
+        console.error('Error saving widget settings:', error)
+        return null
+      }
+      
+      console.log('Widget settings saved successfully:', data)
       return data[0]
     } catch (error) {
       console.error('Supabase connection error:', error)

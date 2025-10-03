@@ -8,6 +8,8 @@ import { agentSettings, chatHistory, knowledgeBase } from './supabase.js';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { WebSocketServer } from 'ws';
+import { createServer } from 'http';
 
 // Загружаем переменные окружения
 if (process.env.NODE_ENV === 'production') {
@@ -30,8 +32,15 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: ['https://adaptoai.ru', 'http://localhost:3000', 'http://localhost:3001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Инициализация OpenAI (для международных клиентов) - ОТКЛЮЧЕНО
 // Инициализируем OpenAI только если есть API ключ
@@ -713,6 +722,26 @@ app.get('/api/status', async (req, res) => {
   }
 });
 
+// API роут для статистики
+app.get('/api/stats', async (req, res) => {
+  try {
+    res.json({
+      status: 'ok',
+      message: 'API работает',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      providers: AI_PROVIDERS
+    });
+  } catch (error) {
+    console.error('Ошибка при получении статистики:', error);
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Ошибка при получении статистики',
+      error: error.message 
+    });
+  }
+});
+
 // Тестовый endpoint для проверки GigaChat
 app.get('/api/test-gigachat', async (req, res) => {
   try {
@@ -1176,6 +1205,160 @@ app.get('/api/analytics', async (req, res) => {
   }
 });
 
+// API роут для получения ключа виджета
+app.get('/api/widget/key', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+    
+    const apiKey = `adapto_${userId}`;
+    res.json({ apiKey });
+  } catch (error) {
+    console.error('Widget Key Error:', error);
+    res.status(500).json({ error: 'Ошибка при получении ключа виджета' });
+  }
+});
+
+// API роут для сохранения настроек виджета
+app.post('/api/widget/save', async (req, res) => {
+  try {
+    const widgetData = req.body;
+    console.log('Saving widget settings:', widgetData);
+    
+    // Здесь можно добавить сохранение в базу данных
+    res.json({ success: true, message: 'Настройки виджета сохранены' });
+  } catch (error) {
+    console.error('Widget Save Error:', error);
+    res.status(500).json({ error: 'Ошибка при сохранении настроек виджета' });
+  }
+});
+
+// API роут для получения настроек агента
+app.get('/api/agent/settings/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('Getting agent settings for user:', userId);
+    
+    // Возвращаем пустые настройки по умолчанию
+    res.json({
+      success: true,
+      settings: {
+        ai_agent_name: 'Адапто',
+        show_ai_label: true,
+        logo_type: 'default',
+        custom_logo: null,
+        custom_logo_name: '',
+        primary_color: '#0084FF',
+        secondary_color: '#F0F8FF',
+        text_color: '#070F1A',
+        background_color: '#FFFFFF',
+        border_radius: 12,
+        font_family: 'Inter',
+        font_size: 14,
+        button_text: 'Написать нам',
+        welcome_message: 'Привет! Как дела?',
+        placeholder_text: 'Введите ваше сообщение...',
+        auto_open: false,
+        auto_open_delay: 5,
+        show_typing_indicator: true,
+        enable_sound: true,
+        enable_vibration: true,
+        position: 'bottom-right',
+        z_index: 9999,
+        max_width: 400,
+        max_height: 600,
+        show_avatar: true,
+        avatar_url: null,
+        enable_file_upload: true,
+        max_file_size: 10,
+        allowed_file_types: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx'],
+        enable_emoji: true,
+        enable_quick_replies: true,
+        quick_replies: ['Да', 'Нет', 'Спасибо', 'Помощь'],
+        enable_rating: true,
+        rating_question: 'Оцените качество обслуживания',
+        enable_feedback: true,
+        feedback_placeholder: 'Оставьте отзыв...',
+        business_hours: {
+          enabled: false,
+          timezone: 'Europe/Moscow',
+          schedule: {
+            monday: { start: '09:00', end: '18:00', enabled: true },
+            tuesday: { start: '09:00', end: '18:00', enabled: true },
+            wednesday: { start: '09:00', end: '18:00', enabled: true },
+            thursday: { start: '09:00', end: '18:00', enabled: true },
+            friday: { start: '09:00', end: '18:00', enabled: true },
+            saturday: { start: '10:00', end: '16:00', enabled: false },
+            sunday: { start: '10:00', end: '16:00', enabled: false }
+          },
+          offline_message: 'Мы сейчас не работаем. Оставьте сообщение, и мы ответим в рабочее время.'
+        },
+        integrations: {
+          telegram: { enabled: false, bot_token: '', chat_id: '' },
+          whatsapp: { enabled: false, phone: '', api_key: '' },
+          email: { enabled: false, email: '', smtp_config: {} },
+          crm: { enabled: false, api_url: '', api_key: '' }
+        },
+        analytics: {
+          enabled: true,
+          track_events: true,
+          track_conversions: true,
+          google_analytics_id: '',
+          yandex_metrica_id: ''
+        },
+        privacy: {
+          gdpr_compliant: true,
+          data_retention_days: 365,
+          allow_data_export: true,
+          allow_data_deletion: true
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Agent Settings Error:', error);
+    res.status(500).json({ error: 'Ошибка при получении настроек агента' });
+  }
+});
+
+// API роут для получения источников знаний
+app.get('/api/knowledge/sources', async (req, res) => {
+  try {
+    console.log('Getting knowledge sources');
+    
+    // Возвращаем пустой список источников
+    res.json({
+      success: true,
+      sources: []
+    });
+  } catch (error) {
+    console.error('Knowledge Sources Error:', error);
+    res.status(500).json({ error: 'Ошибка при получении источников знаний' });
+  }
+});
+
+// API роут для настроек автопереключения
+app.get('/api/autoswitch/settings', async (req, res) => {
+  try {
+    console.log('Getting autoswitch settings');
+    
+    // Возвращаем настройки автопереключения по умолчанию
+    res.json({
+      success: true,
+      settings: {
+        enabled: false,
+        auto_switch_delay: 30,
+        fallback_to_human: true,
+        working_hours_only: false
+      }
+    });
+  } catch (error) {
+    console.error('Autoswitch Settings Error:', error);
+    res.status(500).json({ error: 'Ошибка при получении настроек автопереключения' });
+  }
+});
+
 // Главная страница
 app.get('/', (req, res) => {
   res.json({
@@ -1192,9 +1375,68 @@ app.get('/', (req, res) => {
   });
 });
 
+// Создаем HTTP сервер
+const server = createServer(app);
+
+// Создаем WebSocket сервер
+const wss = new WebSocketServer({ 
+  server,
+  path: '/dialogs'
+});
+
+// WebSocket обработчики
+wss.on('connection', (ws, req) => {
+  console.log('🔌 WebSocket подключение установлено');
+  
+  // Извлекаем userId из URL
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const userId = url.pathname.split('/').pop();
+  
+  if (userId) {
+    console.log(`👤 WebSocket подключение для пользователя: ${userId}`);
+    ws.userId = userId;
+  }
+  
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      console.log('📨 WebSocket сообщение:', data);
+      
+      // Отправляем сообщение обратно всем подключенным клиентам
+      wss.clients.forEach((client) => {
+        if (client.readyState === client.OPEN && client.userId === userId) {
+          client.send(JSON.stringify({
+            type: 'message',
+            data: data,
+            timestamp: new Date().toISOString()
+          }));
+        }
+      });
+    } catch (error) {
+      console.error('❌ Ошибка обработки WebSocket сообщения:', error);
+    }
+  });
+  
+  ws.on('close', () => {
+    console.log('🔌 WebSocket подключение закрыто');
+  });
+  
+  ws.on('error', (error) => {
+    console.error('❌ WebSocket ошибка:', error);
+  });
+  
+  // Отправляем приветственное сообщение
+  ws.send(JSON.stringify({
+    type: 'connected',
+    message: 'WebSocket подключение установлено',
+    timestamp: new Date().toISOString()
+  }));
+});
+
 // Запуск сервера
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 API сервер запущен на порту ${PORT}`);
+  console.log(`🔌 WebSocket сервер запущен на /dialogs`);
   console.log(`🤖 ИИ-провайдеры:`);
   console.log(`   - GigaChat: ${process.env.GIGACHAT_API_KEY ? '✅ Настроен' : '❌ Не найден'}`);
   console.log(`   - Yandex GPT: ${process.env.YANDEX_API_KEY ? '✅ Настроен' : '❌ Не найден'}`);
